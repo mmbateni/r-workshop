@@ -30,6 +30,7 @@ View(lobsters)
 
 ### In R, we can create the functionality of pivot tables with the same logic: we will tell R to group by something and then summarize by something.
 ```{r summarize_data, echo=FALSE}
+lobsters <- read_xlsx(here("data/lobsters2.xlsx"), skip=4)
 lobsters %>%
   group_by(year) %>%
   summarize(count_by_year = n())
@@ -63,4 +64,23 @@ siteyear_summary
 ```{r}
 table_siteyear <- siteyear_summary %>% kable()
 table_siteyear
+```
+## Using Function  dplyr::count()
+```{r}
+
+lobsters %>%
+  count(site, year)
+```
+There are `r count(lobsters)` total lobsters included in this summary.
+## Adding new columns to Data, Making New Variables
+```{r mutation_of_cols}
+lobsters_detailed <- lobsters %>%
+  mutate(size_m = size_mm / 1000, 
+         millenia = 2000,
+         observer = "Allison Horst")
+```
+## Subset Data, Select Variables
+```{r subseting_cols}
+lobsters_detailed_sub <- lobsters_detailed %>%
+  select(date, site, size_m)
 ```
