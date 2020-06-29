@@ -8,3 +8,90 @@ output: html_document
 # Plots with ggplot2
 
 We are going to make plots in R and it's going to be amazing.
+
+```{r setup, echo=FALSE}
+library(tidyverse,quietly = T)
+library(readxl,quietly = T)
+library(here,quietly = T)
+library(scales,quietly = T)   # Need the scales package
+```
+Reading input data from CSV file
+```{r read_csv, echo=FALSE}
+ca_np <- read_csv(here("data", "ca_np.csv")) #read_xlsx()ORread_xls()
+names(ca_np)
+head(ca_np)
+summary(ca_np)
+```
+Reading input data from excel file. read_xlsx() or read_xls() could also be used
+```{r read_excel, echo=FALSE}
+ci_np <- read_excel(here("data", "ci_np.xlsx"))
+names(ci_np)
+head(ci_np)
+summary(ci_np)
+```
+ggplot graph: Visitors to Channel Islands NP
+```{r plot1, echo=TRUE}
+gg_base <- ggplot2::ggplot(data = ci_np, aes(x = year, y = visitors)) 
+  gg_base +
+  geom_area()
+  gg_base +
+  geom_line(
+    color = "purple",
+    linetype = "dashed"
+  )
+  gg_base + 
+  geom_point(color = "purple",
+             pch = 17,
+             size = 4,
+             alpha = 0.5)
+  gg_base + 
+  geom_point(
+    aes(size = visitors,
+        color = visitors),
+    alpha = 0.5
+  )
+  gg_base + 
+  geom_col(aes(fill = visitors))
+  gg_base +
+  geom_point(
+    aes(size = visitors,
+        color = visitors),
+    alpha = 0.5
+  ) +
+  theme_minimal()
+  gg_base +
+  geom_line(linetype = "dotted") +
+  theme_bw() +
+  labs(
+    x = "Year",
+    y = "Annual park visitors",
+    title = "Channel Islands NP Visitation",
+    subtitle = "(1963 - 2016)"
+  ) + scale_y_continuous(labels=comma) 
+  gg_base +
+  geom_line(color = "purple") +
+  geom_point(color = "orange",
+             aes(size = year),
+             alpha = 0.5)
+  gg_base +
+  geom_col(fill = "orange",
+           color = "purple") +
+  geom_line(color = "green")
+  
+```
+Now plotting multiple series
+```{r plot2, echo=TRUE}
+gg_np <- ggplot(data = ca_np, aes(x = year, y = visitors, group = park_name))
+gg_np + geom_line(aes(color = park_name)) 
+gg_np +
+  geom_line(show.legend = FALSE) +
+  theme_light() + 
+  labs(x = "year", y = "annual visitors") +
+  facet_wrap(~ park_name)
+```
+Exporting a ggplot graph with ggsave()
+ggsave() will export the most recently run ggplot graph by default (plot = last_plot()), unless you give it the name of a different saved ggplot object. Some common arguments for ggsave():
+```{r save_plot}
+ggsave(here("figures", "np_graph.jpg"), dpi = 180, width = 8, height = 7)
+```
+
