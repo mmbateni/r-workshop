@@ -1,0 +1,66 @@
+---
+title: "pivot_lobsters"
+author: "MMB"
+date: "6/29/2020"
+output: html_document
+---
+## attach libraries
+```{r setup, include=TRUE}
+library(tidyverse)
+library(readxl)
+library(here)
+library(skimr) # install.packages('skimr')
+library(kableExtra) # install.packages('kableExtra')
+```
+
+## Read In Data
+
+```{r input, echo=FALSE}
+lobsters <- read_xlsx(here("data/lobsters.xlsx"), skip=4)
+head(lobsters)
+```
+# Explore Data
+```{r summary, echo=FALSE}
+skimr::skim(lobsters) 
+```
+# Show Data
+```{r, eval=FALSE}
+View(lobsters)
+```
+
+### In R, we can create the functionality of pivot tables with the same logic: we will tell R to group by something and then summarize by something.
+```{r summarize_data, echo=FALSE}
+lobsters %>%
+  group_by(year) %>%
+  summarize(count_by_year = n())
+lobsters %>%
+  group_by(site, year) %>%
+  summarize(count_by_siteyear =  n())
+siteyear_summary <- lobsters %>%
+  group_by(site, year) %>%
+  summarize(count_by_siteyear =  n(), 
+            mean_size_mm = mean(size_mm, na.rm=TRUE), 
+            sd_size_mm = sd(size_mm, na.rm=TRUE),
+            median_size_mm = median(size_mm, na.rm = TRUE))
+```
+## a ggplot option:
+```{r plot_grouped}
+ggplot(data = siteyear_summary, aes(x = year, y = median_size_mm, color = site)) +
+  geom_line() 
+ggsave(here("figures", "lobsters-line.png"))
+ggplot(siteyear_summary, aes(x = year, y = median_size_mm)) +
+  geom_col() +
+  facet_wrap(~site)
+ggsave(here("figures", "lobsters-col.png"))
+```
+  
+## inspect our new variable 
+There are `r nrow(lobsters)` total lobsters included in this report
+```{r}
+siteyear_summary
+```
+## make a table with our new variable
+```{r}
+table_siteyear <- siteyear_summary %>% kable()
+table_siteyear
+```
