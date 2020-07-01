@@ -1,0 +1,110 @@
+---
+title: "filter_join"
+author: "MMB"
+date: "7/1/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readxl)
+library(here) 
+library(kableExtra)
+```
+### Read in data:
+```{r  read_data, echo=FALSE}
+fish <- read_csv(here("data", "fish.csv"))
+kelp_abur <- read_excel(here("data", "kelp.xlsx"), sheet = "abur")
+names(fish); summary(fish); head(fish); tail(fish)
+names(kelp_abur); summary(kelp_abur); head(kelp_abur); tail(kelp_abur)
+```
+### dplyr::filter() to conditionally subset by rows
+```{r filter1, echo=FALSE}
+fish_garibaldi <- fish %>% 
+  filter(common_name == "garibaldi")
+summary(fish_garibaldi)
+fish_mohk <- fish %>% 
+  filter(site == "mohk")
+summary(fish_mohk)
+fish_over50 <- fish %>% 
+  filter(total_count >= 50)
+summary(fish_over50)
+```
+## Filter to return rows that match multiple criteria (OR)
+```{r filter2, echo=FALSE}
+fish_3sp <- fish %>% 
+  filter(common_name == "garibaldi" | 
+           common_name == "blacksmith" | 
+           common_name == "black surfperch")
+summary(fish_3sp)
+fish_3sp <- fish %>% 
+  filter(common_name %in% c("garibaldi", "blacksmith", "black surfperch"))
+fish_gar_2016 <- fish %>% 
+  filter(year == 2016 | common_name == "garibaldi")
+summary(fish_gar_2016)
+```
+## Filter to return rows that match multiple criteria (AND)
+```{r filter3, echo=FALSE}
+aque_2018 <- fish %>% 
+  filter(year == 2018, site == "aque")
+aque_2018 <- fish %>% 
+  filter(year == 2018 & site == "aque")
+aque_2018 <- fish %>% 
+  filter(year == 2018) %>% 
+  filter(site == "aque")
+aque_2018
+```
+## Filter to return rows that match multiple criteria (AND)
+```{r filter4, echo=FALSE}
+aque_2018 <- fish %>% 
+  filter(year == 2018, site == "aque")
+aque_2018 <- fish %>% 
+  filter(year == 2018 & site == "aque")
+aque_2018 <- fish %>% 
+  filter(year == 2018) %>% 
+  filter(site == "aque")
+aque_2018
+# Observations for garibaldi or rock wrasse AND the total_count is less than or equal to 10
+low_gb_wr <- fish %>% 
+  filter(common_name %in% c("garibaldi", "rock wrasse"), 
+         total_count <= 10)
+low_gb_wr
+```
+## stringr::str_detect() to filter by a partial pattern
+```{r str_detect, echo=FALSE}
+fish_bl <- fish %>% 
+  filter(str_detect(common_name, pattern = "black"))
+fish_Nit <- fish %>% 
+  filter(str_detect(common_name, pattern = "it", negate = TRUE))
+```
+## dplyr::*_join() to merge data frames (full_join(), left_join(), and inner_join())
+```{r join, echo=FALSE}
+abur_kelp_fish <- kelp_abur %>% 
+  full_join(fish, by = c("year", "site")) 
+View(abur_kelp_fish)
+kelp_fish_left <- kelp_abur %>% 
+  left_join(fish, by = c("year","site"))
+kelp_fish_left
+kelp_fish_injoin <- kelp_abur %>% 
+  inner_join(fish, by = c("year", "site"))
+kelp_fish_injoin
+```
+## filter() and join() in a sequence
+```{r join_filter, echo=FALSE }
+my_fish_join <- fish %>% 
+  filter(year == 2017, site == "abur") %>% 
+  left_join(kelp_abur, by = c("year", "site")) %>% 
+  mutate(fish_per_frond = total_count / total_fronds)
+View(my_fish_join)
+```
+## An HTML table with kable() and kableExtra
+```{r table, echo=FALSE}
+kable(my_fish_join)
+# kableExtra::kable_styling() to modify HTML table styles
+my_fish_join %>% 
+  kable() %>% 
+  kable_styling(bootstrap_options = "striped", 
+                full_width = FALSE)
+```
+
