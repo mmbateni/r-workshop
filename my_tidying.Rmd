@@ -1,0 +1,94 @@
+---
+title: "my_tidying"
+author: "MMB"
+date: "6/29/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Attach the packages we’ll use here
+```{r  setup_packages, include=FALSE}
+library(tidyverse)
+library(janitor)
+library(here)
+library(readxl)
+```
+### read_excel() to read in data from an Excel worksheet
+```{r}
+inverts <- read_excel(here("data", "inverts.xlsx"))
+#View(inverts)
+names(inverts)
+summary(inverts)
+```
+## reshape from wider-to-longer format
+```{r long, echo=FALSE}
+inverts_long <- pivot_longer(data = inverts, 
+                                    cols = '2016':'2018',
+                                    names_to = "year",
+                                    values_to = "sp_count")
+inverts_long
+class(inverts_long$year)
+inverts_long <- inverts_long %>% 
+  mutate(year = as.numeric(year))
+class(inverts_long$year)
+```
+## convert from longer-to-wider format
+```{r wide, echo=FALSE}
+inverts_wide <- inverts_long %>% 
+  pivot_wider(names_from = common_name, 
+                     values_from = sp_count)
+
+inverts_wide
+```
+## janitor::clean_names() to clean up column names
+```{r colnames, echo=FALSE}
+inverts_wide <- inverts_wide %>% 
+  clean_names()
+
+names(inverts_wide)
+```
+## tidyr::unite() to merge information from separate columns
+```{r unite, echo=FALSE}
+inverts_unite <- inverts_long %>% 
+  unite(col = "site_year", # What to name the new united column
+               c(site, year), # The columns we'll unite (site, year)
+               sep = "_") # How to separate the things we're uniting
+```
+## 
+```{r unite2, echo=FALSE}
+inverts_moyr <- inverts_long %>% 
+  unite(col = "mo_yr", # What to name the new united column
+               c(month, year), # The columns we'll unite (site, year)
+               sep = "/") 
+```
+## 
+```{r uniteM, echo=FALSE}
+
+inverts_triple_unite <- inverts_long %>% 
+  tidyr::unite(col = "year_site_name",
+               c(year, site, common_name),
+               sep = "-") # Note: this is a dash
+
+head(inverts_triple_unite)
+```
+## tidyr::separate() to separate information into multiple columns
+```{r separate, echo=FALSE}
+inverts_sep <- inverts_unite %>% 
+  tidyr::separate(site_year, into = c("my_site", "my_year"))
+```
+## stringr::str_replace() to replace a pattern
+```{r replace, echo=FALSE}
+ca_abbr <- inverts %>% 
+  mutate(
+    common_name = 
+      str_replace(common_name, 
+              pattern = "california", 
+              replacement = "CA")
+  )
+head(inverts)
+head(ca_abbr)
+```
+
