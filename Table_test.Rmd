@@ -1,0 +1,124 @@
+---
+title: "Table_test"
+author: "MMB"
+date: "7/2/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+options(knitr.table.format = "html") #options(kableExtra.auto_format = FALSE)
+```
+
+## 
+
+```{r}
+dt <- mtcars[1:5, 1:6]
+```
+## kable(dt)
+```{r, echo=FALSE}
+kable(dt)
+```
+## Use kable_styling
+```{r}
+dt %>%
+  kable() %>%
+  kable_styling()
+```
+## add striped lines (alternative row colors) to your table and highlight the hovered (i.e. top) row
+```{r}
+kable(dt) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+```
+## Same as above with slightly shorter row height.
+```{r}
+kable(dt) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+```
+## Compatibile with all screens/ font size
+```{r}
+kable(dt) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive") ,font_size = 7)
+```
+## Full width? and Position / wrap text around
+```{r}
+kable(dt) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F , position = "left")#position = "float_right"
+```
+## Fixed Table Header Row
+```{r}
+fixed_header = list(enabled = T, background = "red")
+kable(mtcars[1:10, 1:5]) %>%
+  kable_styling(fixed_thead = fixed_header)
+```
+## Column / Row Specification
+```{r}
+text_tbl <- data.frame( Items = c("Item 1", "Item 2", "Item 3"),
+  Features = c(
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vehicula tempor ex. Morbi malesuada sagittis turpis, at venenatis nisl luctus a. ",
+    "In eu urna at magna luctus rhoncus quis in nisl. Fusce in velit varius, posuere risus et, cursus augue. Duis eleifend aliquam ante, a aliquet ex tincidunt in. ", 
+    "Vivamus venenatis egestas eros ut tempus. Vivamus id est nisi. Aliquam molestie erat et sollicitudin venenatis. In ac lacus at velit scelerisque mattis. "
+  )
+)
+
+kable(text_tbl) %>%
+  kable_styling(full_width = F) %>%
+  column_spec(1, bold = T, border_right = T) %>%
+    column_spec(2, width = "30em", background = "yellow")
+#row_spec
+kable(dt) %>%
+  kable_styling("striped", full_width = F) %>%
+  column_spec(5:7, bold = T) %>%
+  row_spec(3:5, bold = T, color = "white", background = "#D7261E")
+```
+## Header Rows
+```{r}
+kable(dt) %>%
+  kable_styling("striped", full_width = F) %>%
+  row_spec(0, angle = -45)
+```
+## Cell/Text Specification
+```{r}
+library(dplyr)
+mtcars[1:10, 1:2] %>%
+  mutate(
+    car = row.names(.),
+    mpg = cell_spec(mpg, "html", color = ifelse(mpg > 20, "red", "blue")),
+    cyl = cell_spec(cyl, "html", color = "white", align = "c", angle = 45, 
+                    background = factor(cyl, c(4, 6, 8),c("#666666", "#999999", "#BBBBBB")))
+  ) %>%
+  select(car, mpg, cyl) %>%
+  kable(format = "html", escape = F) %>%
+  kable_styling("striped", full_width = F)
+```
+## Visualize data with Viridis Color
+```{r}
+iris[1:10, ] %>%
+  mutate_if(is.numeric, function(x) {
+    cell_spec(x, bold = T, 
+              color = spec_color(x, end = 0.9),
+              font_size = spec_font_size(x))
+  }) %>%
+  mutate(Species = cell_spec(
+    Species, color = "white", bold = T,
+    background = spec_color(1:10, end = 0.9, option = "A", direction = -1)
+  )) %>%
+  kable(escape = F, align = "c") %>%
+  kable_styling(c("striped", "condensed"), full_width = F)
+```
+## Images
+Here's our logo (hover to see the title text):
+```{r}
+Inline-style: 
+![alt "dd"](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 1")
+
+Reference-style: 
+![alt text][logo]
+
+[logo]: https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 2"
+```
+
+
+
